@@ -18,11 +18,6 @@ namespace gimufrontier.Controllers
     public class GmeController : ControllerBase
     {
         /// <summary>
-        /// Logged in users
-        /// </summary>
-        private Dictionary<string, User> _users = new();
-
-        /// <summary>
         /// ASP.NET Logger
         /// </summary>
         private readonly ILogger<GmeController> _logger;
@@ -52,7 +47,6 @@ namespace gimufrontier.Controllers
         /// <param name="cfg">JSON Configuration</param>
         public GmeController(ILogger<GmeController> logger, GimuDbContext ctx, IRedisDatabase redis, IConfiguration cfg)
         {
-            logger.LogDebug("Entrypoint: ios21900.bfww.gumi.sg/bf/gme/");
             _logger = logger;
             _newUserDlg = AddNewUser;
 
@@ -65,7 +59,7 @@ namespace gimufrontier.Controllers
 
         private void AddNewUser(User u)
         {
-            _users.Add(u.GameUserId, u);
+            StaticData.Users.Add(u.GameUserId, u);
         }
 
 
@@ -127,7 +121,7 @@ namespace gimufrontier.Controllers
         {
             try
             {
-                var clientRequest = (ExchangeData?)await JsonSerializer.DeserializeAsync(Request.Body, typeof(ExchangeData), new JsonSerializerOptions { IncludeFields = true });
+                var clientRequest = (ExchangeData?)await JsonSerializer.DeserializeAsync(Request.Body, typeof(ExchangeData), StaticData.DefaultOptions);
                 if (clientRequest == null)
                     throw new Exception("Client request deserialization returned null");
 
@@ -136,15 +130,15 @@ namespace gimufrontier.Controllers
 
                 if (!_handlers.ContainsKey(clientRequest.Header.Request))
                 {
-                    _logger.LogWarning("Unimplemented request ${Request} }, player id ${Id}, body ${Data}", clientRequest.Header.Request, clientRequest.Header.Id, clientRequest.Body.Data);
-                    return ExchangeData.GenError(ErrorID.Yes, ErrorOperation.Continue, $"Request {clientRequest.Header.Request} not implemented!");
+                    _logger.LogWarning("Unimplemented request ${Request}, player id ${Id}", clientRequest.Header.Request, clientRequest.Header.Id);
+                    return ExchangeData.GenError(ErrorID.Yes, ErrorOperation.ReturnToGame, $"Request {clientRequest.Header.Request} not implemented!");
                 }
 
                 // Get the handler
                 var handler = _handlers[clientRequest.Header.Request];
                 var handlerParams = handler.Item3.GetParameters();
 
-                if (handlerParams == null || handlerParams?.Length != 2)
+                if (handlerParams == null || handlerParams?.Length != 1)
                     throw new Exception("Invalid handler");
 
                 // Decrypt JSON
@@ -153,12 +147,7 @@ namespace gimufrontier.Controllers
 
                 // Deserialize the request into C# class
                 var ms = new MemoryStream(clientJson);
-                var request = await JsonSerializer.DeserializeAsync(ms, handlerParams[1].ParameterType, new JsonSerializerOptions { IncludeFields = true });
-
-                User? user = null;
-
-                if (_users.ContainsKey(clientRequest.Header.Id))
-                    user = _users[clientRequest.Header.Id];
+                var request = await JsonSerializer.DeserializeAsync(ms, handlerParams[0].ParameterType, StaticData.DefaultOptions);
 
                 var isAwaitable = handler.Item3.ReturnType.GetMethod(nameof(Task.GetAwaiter)) != null;
 
@@ -166,16 +155,22 @@ namespace gimufrontier.Controllers
 
                 // Run the handler
                 if (isAwaitable)
-                    response = (object?)await (dynamic?)handler.Item3.Invoke(handler.Item2, new object?[2] { user, request });
+                {
+                    var task = handler.Item3.Invoke(handler.Item2, new object?[] { request });
+                    if (task == null)
+                        throw new Exception("Unable to await the task");
+
+                    response = await (dynamic)task;
+                }
                 else
-                    response = handler.Item3.Invoke(handler.Item2, new object?[2] { user, request });
+                    response = handler.Item3.Invoke(handler.Item2, new object?[] { request });
 
                 if (response == null)
                     throw new Exception("Unable to generate server response");
 
                 // Serialize the response into JSON
                 ms = new MemoryStream();
-                await JsonSerializer.SerializeAsync(ms, response, handler.Item3.ReturnType, new JsonSerializerOptions { IncludeFields = true });
+                await JsonSerializer.SerializeAsync(ms, response, response.GetType(), StaticData.DefaultOptions);
 
                 var responseData = ms.ToArray();
 
@@ -212,7 +207,7 @@ namespace gimufrontier.Controllers
         //[Produces("text/plain")] // TODO
         public long ServerTime()
         {
-            return new DateTimeOffset(DateTime.Now).ToUnixTimeSeconds();
+            return StaticData.DateTimeNowToUnix();
         }
 
         /// <summary>

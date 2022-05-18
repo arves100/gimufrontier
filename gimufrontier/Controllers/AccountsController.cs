@@ -10,7 +10,7 @@ using StackExchange.Redis.Extensions.Core.Abstractions;
 namespace gimufrontier.Controllers
 {
     /// <summary>
-    /// Live API login controller (api-sl.bfww.gumi.sg/accounts/)
+    /// Live API login controller (api-sl.gl.bfww.gumi.sg/accounts/)
     /// </summary>
     [ApiController]
     [Route("/accounts")]
@@ -42,8 +42,6 @@ namespace gimufrontier.Controllers
             _logger = logger;
             _context = context;
             _redis = redis;
-
-            logger.LogDebug("Entrypoint: api-sl.bfww.gumi.sg/accounts/");
         }
 
         /// <summary>
@@ -68,22 +66,19 @@ namespace gimufrontier.Controllers
                 _logger.LogDebug("queries: {str}", str);
 
                 var fbId = q["facebook_access_info"];
-                var idi = q["identifiers"][0].Replace("{", "").Replace("}", "").Split(",").ToDictionary(x => x.Substring(0, x.LastIndexOf(":")).Replace("\"", "").Trim(), x => x.Substring(x.LastIndexOf(":") + 1).Replace("\"", "").Trim());
 
-#if false // no idea why the json deserialization was not working fine
                 var idi = q["identifiers"][0];
 
                 // Decode "identifiers"
-                var ms = new MemoryStream(Encoding.UTF8.GetBytes(""));
+                var ms = new MemoryStream(Encoding.UTF8.GetBytes(idi));
 
                 var obj = (Identifiers?)await JsonSerializer.DeserializeAsync(ms, typeof(Identifiers), StaticData.DefaultOptions);
 
                 if (obj == null)
                     throw new Exception("Json deserialization error");
-#endif
 
                 // Check if the user facebook login exists
-                var fb = await _context.FacebookUsers.Where(x => x.Token == fbId[0] && x.AndroidId == idi["android_id"]).SingleOrDefaultAsync();
+                var fb = await _context.FacebookUsers.Where(x => x.Token == fbId[0] && x.AndroidId == obj.AndroidId).SingleOrDefaultAsync();
 
                 if (fb == null)
                     throw new Exception("User not found");

@@ -20,7 +20,12 @@ namespace gimufrontier
         {
             using (var a = Aes.Create())
             {
-                a.Key = key;
+                // fix for keys < 16
+                byte[] realKey = new byte[16];
+                Array.Clear(realKey, 0, 16);
+                Array.Copy(key, realKey, key.Length);
+
+                a.Key = realKey;
 
                 if (!ebc)
                 {
@@ -58,7 +63,11 @@ namespace gimufrontier
         {
             using (var a = Aes.Create())
             {
-                a.Key = key;
+                byte[] realKey = new byte[16];
+                Array.Clear(realKey, 0, 16);
+                Array.Copy(key, realKey, key.Length);
+
+                a.Key = realKey;
 
                 if (ebc)
                 {

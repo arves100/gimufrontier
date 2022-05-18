@@ -100,7 +100,7 @@ namespace gimufrontier.Models.BF_Action.Responses
         public ulong Zel;
 
         [JsonPropertyName("HTVh8a65")]
-        [JsonConverter(typeof(JsonStringUIntConverter))]
+        [JsonConverter(typeof(JsonStringULongConverter))]
         public ulong Karma;
 
         [JsonPropertyName("03UGMHxF")]
@@ -196,7 +196,6 @@ namespace gimufrontier.Models.BF_Action.Responses
 
     // zI2tJB7R -> user team archive
     // PQ56vbkI -> user team arena archive
-    // 4ceMWH6k -> user unit info
     // dX7S2Lc1 -> user party squad info
     // GV81ctzR -> user unit dictionary??
     // 3kcmQy7B -> favourite unit info
@@ -235,17 +234,60 @@ namespace gimufrontier.Models.BF_Action.Responses
     // 2375D38i -> feature gating info??
     // 62Dz13dP -> unknown/not present in game code
     // M3dw18eB -> summoner journal user info
-    // 3da6bd0a -> login campain info
-    // bpD29eiQ -> video ads region resposne
-    // j129kD6r -> video ad info
     // a3d5d12i -> second type summon ticket info
     // hE1d083b -> second type summon ticket mst
     // da3qD39b -> resummon summon mst
     // l234vdKs -> event token info
     // sxorQ3Mb -> ddb unit info
     // tR4katob -> ddb unit level info
-    // Pj6zDW3m -> notice info
     // 3aDk1xk7 -> excluded dungeon mst
+
+    public record VideoAdInfoResponse
+    {
+        [JsonPropertyName("k3ab6D82")]
+        [JsonConverter(typeof(JsonStringUIntConverter))]
+        public uint VideoId;
+
+        [JsonPropertyName("Diwl3b56")]
+        public uint IsAvailable;
+
+        [JsonPropertyName("Y3de0n2p")]
+        [JsonConverter(typeof(JsonStringUIntConverter))]
+        public uint RegionId; // TODO: which regions
+
+        [JsonPropertyName("26adZ1iy")]
+        public uint IsEnabled;
+
+        [JsonPropertyName("oohpPLCt")]
+        public uint NextAvailableTimeLeft;
+    }
+
+    public record VideoAdsRegion
+    {
+        [JsonPropertyName("Y3de0n2p")]
+        [JsonConverter(typeof(JsonStringUIntConverter))]
+        public uint Id;
+
+        [JsonPropertyName("j3d6E2ia")]
+        public string Regions = "US,JP,SG";
+    }
+
+    public record UserLoginCampaignInfo
+    {
+        [JsonPropertyName("H1Dkq93v")]
+        [JsonConverter(typeof(JsonStringUIntConverter))]
+        public uint CampaignId;
+
+        [JsonPropertyName("ad6i23pO")]
+        public uint TotalDaysLoggedIn;
+
+        [JsonPropertyName("1adb38d5")]
+        [JsonConverter(typeof(JsonStringUIntConverter))]
+        public uint TotalCampaignDays;
+
+        [JsonPropertyName("4tswNoV9")]
+        public uint Unknown = 1; // First of the day?
+    }
 
     public record UserInfoResponse
     {
@@ -259,5 +301,39 @@ namespace gimufrontier.Models.BF_Action.Responses
         [JsonPropertyName("4ZfpSQv1")]
         public UserSoundInfo[]? SoundInfo;
 #endif
+
+        [JsonPropertyName("Pj6zDW3m")]
+        public NoticeInfoResponse? NoticeInfo;
+
+        [JsonPropertyName("3da6bd0a")]
+        public UserLoginCampaignInfo[]? UserLoginCampaign;
+
+        [JsonPropertyName("bpD29eiQ")]
+        public VideoAdsRegion[]? VideoConfig = new VideoAdsRegion[1]
+        {
+            new VideoAdsRegion(),
+        };
+
+        [JsonPropertyName("4ceMWH6k")]
+        public UnitInfoResponse[]? UnitInfos;
+
+        [JsonPropertyName("j129kD6r")]
+        public VideoAdInfoResponse[]? VideoAdInfos = new VideoAdInfoResponse[2]
+        {
+            new VideoAdInfoResponse
+            {
+                IsAvailable = 1,
+                IsEnabled = 1,
+                NextAvailableTimeLeft = 1650672000,
+                VideoId = 998,
+            },
+            new VideoAdInfoResponse
+            {
+                IsEnabled = 1,
+                IsAvailable = 1,
+                NextAvailableTimeLeft = 1650628800,
+                VideoId = 999,
+            },
+        };
     }
 }

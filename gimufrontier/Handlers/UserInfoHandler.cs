@@ -14,10 +14,43 @@ namespace gimufrontier.Handlers
             _cfg = cfg.GetRequiredSection("GameConfig");
         }
 
-        public UserInfoResponse Handle(User user, UserInfoRequest rq)
+        public UserInfoResponse Handle(UserInfoRequest rq)
         {
             if (rq.UserInfos == null)
                 throw new Exception("Invalid UserInfo request serialization");
+
+            if (!StaticData.Users.ContainsKey(rq.UserInfos[0].GumiLiveToken))
+                throw new ActionException(Models.BF_Action.ErrorID.No, Models.BF_Action.ErrorOperation.Close, "     Invalid user\nUser session is expired/not logged in");
+
+            var user = StaticData.Users[rq.UserInfos[0].GumiLiveToken];
+
+            var unitz = new UnitInfoResponse[2]
+            {
+                 new UnitInfoResponse
+                {
+                    UserId = user.GameUserId,
+                    Unknown = 1001,
+                    InternalUnitId = 820748,
+                    UnitType = 1,
+                    Level = 150,
+                    BaseHP = 1000,
+                    BaseAtk = 100,
+                    BaseDef = 100,
+                    BaseHeal = 100,
+                 },
+                 new UnitInfoResponse
+                 {
+                     Unknown = 2001,
+                     UserId = user.GameUserId,
+                     InternalUnitId = 60165,
+                     UnitType = 1,
+                     Level = 150,
+                     BaseHP = 999999999,
+                     BaseAtk = 999999999,
+                     BaseDef =  999999999,
+                     BaseHeal = 999999999,
+                 }
+            };
 
             return new UserInfoResponse
             {
@@ -59,6 +92,28 @@ namespace gimufrontier.Handlers
                         MaxFriendCount = _cfg.GetValue<uint>("DefaultMaxFriends"),
                     }
                 },
+
+                // -- BEGIN MST
+
+                NoticeInfo = new NoticeInfoResponse
+                {
+                    Id = 1,
+                    NoticeUrl = "ios.bfww.gumi.sg/test.html",
+                },
+
+                UserLoginCampaign = new UserLoginCampaignInfo[]
+                {
+                    new UserLoginCampaignInfo
+                    {
+                        CampaignId = 100,
+                        TotalDaysLoggedIn = 1,
+                        TotalCampaignDays = 999,
+                    }
+                },
+
+                UnitInfos = unitz,
+
+                // -- EBD NST
             };
         }
     }

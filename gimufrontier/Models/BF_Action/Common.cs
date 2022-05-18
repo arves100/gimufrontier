@@ -27,4 +27,10 @@ namespace gimufrontier.Models.BF_Action
         public uint SfxVolume = 10;
     }
 
+    public record SignalKeyInfo
+    {
+        [JsonPropertyName("Kn51uR4Y")]
+        public string SignalKeyTag = "";
+    }
+
 }

@@ -28,8 +28,6 @@ namespace gimufrontier.Controllers
         {
             _logger = logger;
             _cfg = cfg.GetRequiredSection("ServerConfig");
-
-            logger.LogDebug("Entrypoint: api-sl.bfww.gumi.sg/dls");
         }
 
         /// <summary>

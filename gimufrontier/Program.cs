@@ -14,6 +14,8 @@ Console.WriteLine("   GimuFrontier: An experimental Brave Frontier emulator");
 Console.WriteLine("                 Copyright (C) 2022 Arves100");
 Console.WriteLine("--------------------------------------------------------------------");
 
+StaticData.SetupData();
+
 var builder = WebApplication.CreateBuilder(args);
 var cfg = builder.Configuration;
 

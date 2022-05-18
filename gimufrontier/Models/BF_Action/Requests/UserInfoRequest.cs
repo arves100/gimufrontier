@@ -2,12 +2,6 @@
 
 namespace gimufrontier.Models.BF_Action.Requests
 {
-    public record SignalKeyRequest
-    {
-        [JsonPropertyName("Kn51uR4Y")]
-        public string SignalKeyTag = "";
-    }
-
     public record UserInfoRequest
     {
         [JsonPropertyName("IKqx1Cn9")]
@@ -17,6 +11,6 @@ namespace gimufrontier.Models.BF_Action.Requests
         public RequestMST[]? MST;
 
         [JsonPropertyName("6FrKacq7")]
-        public SignalKeyRequest[]? SignalKeys;
+        public SignalKeyInfo[]? SignalKeys;
     }
 }
