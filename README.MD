@@ -1,6 +1,8 @@
 # GimuFrontier
 An experimental Brave Frontier written in C# and ASP.NET
 
+**DEPRECATION NOTICE:** See the [C++ Server](https://github.com/decompfrontier/server) for more updates/integration inside Brave Frontier
+
 Coded in around 5 days or what just to get 4k sennie, don't expect perfect quality code or something there's obvious things that can be optimized (ie: the handler creation should use ms's internal DI libs)
 
 There's tons of things missing as well and some hardcoded things as well.
